@@ -633,14 +633,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebas
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
-// TODO: Reemplaza este objeto con la configuración real de tu proyecto de Firebase
+// Configuración de Firebase en Producción
 const firebaseConfig = {
-    apiKey: "TU_API_KEY_AQUI",
-    authDomain: "tu-proyecto.firebaseapp.com",
-    projectId: "tu-proyecto",
-    storageBucket: "tu-proyecto.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef123456"
+    apiKey: "AIzaSyBZ3dPbu6VtbeBLajeARv5dfAZchwTE9fo",
+    authDomain: "airtek-ordenes.firebaseapp.com",
+    projectId: "airtek-ordenes",
+    storageBucket: "airtek-ordenes.firebasestorage.app",
+    messagingSenderId: "535529812546",
+    appId: "1:535529812546:web:41ca43d4409ea646a073db",
+    measurementId: "G-V52S4SV33L"
 };
 
 // Initialize Firebase
@@ -671,6 +672,8 @@ import {
 
 let dbData = []; // Reemplaza a mockData
 let unsubscribeSnapshot = null;
+let monthlyChartInstance = null;
+let statusChartInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     startRealtimeListener();
@@ -1153,29 +1156,30 @@ function renderData() {
     document.getElementById('stat-total').textContent = totalCount;
     document.getElementById('stat-pending').textContent = pendingCount;
     document.getElementById('stat-received').textContent = receivedCount;
+    updateCharts();
 }
 
-// Chart.js (Funcionalidad decorativa base que luego puedes conectar a dbData si lo requieres)
+// --- CHARTS LOGIC ---
 function initCharts() {
     const ctxMonthly = document.getElementById('monthlyChart');
     const ctxStatus = document.getElementById('statusChart');
 
     if (!ctxMonthly || !ctxStatus) return;
 
-    new Chart(ctxMonthly, {
+    monthlyChartInstance = new Chart(ctxMonthly, {
         type: 'bar',
         data: {
-            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio (Proy.)'],
+            labels: [],
             datasets: [
                 {
                     label: 'Cantidad de Productos Solicitados',
-                    data: [150, 200, 180, 320, 450, 120],
+                    data: [],
                     backgroundColor: 'rgba(37, 99, 235, 0.8)',
                     borderRadius: 6
                 },
                 {
                     label: 'Cantidad de Órdenes Generadas',
-                    data: [12, 18, 15, 25, 40, 8],
+                    data: [],
                     type: 'line',
                     borderColor: '#f59e0b',
                     borderWidth: 3,
@@ -1191,12 +1195,12 @@ function initCharts() {
         }
     });
 
-    new Chart(ctxStatus, {
+    statusChartInstance = new Chart(ctxStatus, {
         type: 'doughnut',
         data: {
             labels: ['Recibidos', 'Pendientes', 'Parciales'],
             datasets: [{
-                data: [45, 30, 15],
+                data: [0, 0, 0],
                 backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
                 borderWidth: 0,
                 hoverOffset: 4
@@ -1211,6 +1215,44 @@ function initCharts() {
             cutout: '70%'
         }
     });
+}
+
+function updateCharts() {
+    if (!monthlyChartInstance || !statusChartInstance) return;
+
+    let countRecibido = 0;
+    let countPendiente = 0;
+    let countParcial = 0;
+    const monthData = {};
+
+    dbData.forEach(row => {
+        // Status calculations
+        if (row.estadoRecibo === 'completo') countRecibido += row.cantidad;
+        else if (row.estadoRecibo === 'parcial') countParcial += row.cantidad;
+        else countPendiente += row.cantidad;
+
+        // Monthly calculations
+        if (row.mes) {
+            if (!monthData[row.mes]) {
+                monthData[row.mes] = { items: 0, orders: new Set() };
+            }
+            monthData[row.mes].items += row.cantidad;
+            if (row.ordenCompra) {
+                monthData[row.mes].orders.add(row.ordenCompra);
+            }
+        }
+    });
+
+    // Update Status Doughnut
+    statusChartInstance.data.datasets[0].data = [countRecibido, countPendiente, countParcial];
+    statusChartInstance.update();
+
+    // Update Monthly Bar/Line
+    const sortedMonths = Object.keys(monthData).sort();
+    monthlyChartInstance.data.labels = sortedMonths;
+    monthlyChartInstance.data.datasets[0].data = sortedMonths.map(m => monthData[m].items);
+    monthlyChartInstance.data.datasets[1].data = sortedMonths.map(m => monthData[m].orders.size);
+    monthlyChartInstance.update();
 }
 
 </script>
