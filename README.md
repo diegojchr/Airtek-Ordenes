@@ -1,3 +1,4 @@
+[index.html](https://github.com/user-attachments/files/28233829/index.html)
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,7 +10,217 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+:root {
+    /* Premium Airtek Colors */
+    --bg-dark: #0f172a; 
+    --bg-sidebar-active: #1e293b;
+    --text-sidebar: #94a3b8;
+    --text-sidebar-hover: #f1f5f9;
+    
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    
+    --primary-blue: #2563eb;
+    --primary-blue-hover: #1d4ed8;
+    --border-color: #e2e8f0;
+    
+    --status-green: #10b981;
+    --status-red: #ef4444;
+    --status-orange: #f59e0b;
+    
+    /* Typography */
+    --font-sans: 'Inter', sans-serif;
+    --font-heading: 'Outfit', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { font-family: var(--font-sans); background-color: var(--bg-main); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+
+/* --- LOGIN SCREEN --- */
+.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-dark), #1e293b); display: flex; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease, visibility 0.5s ease; }
+.login-overlay.hidden { opacity: 0; visibility: hidden; }
+.login-box { background: white; padding: 40px; border-radius: 16px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.login-logo { text-align: center; margin-bottom: 30px; }
+.logo-icon-large { width: 60px; height: 60px; margin: 0 auto 16px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; }
+.login-logo h2 { font-size: 24px; font-weight: 700; }
+.login-logo p { font-size: 13px; color: var(--text-secondary); margin-top: 5px; }
+
+/* --- APP LAYOUT --- */
+.app-container { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 260px; background-color: var(--bg-dark); color: var(--text-sidebar); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10; }
+.sidebar-header { padding: 28px 24px; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.logo { display: flex; align-items: center; color: #ffffff; gap: 12px; }
+.logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
+.logo h2 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+.sub-logo { font-size: 10px; font-weight: 600; color: var(--primary-blue); }
+
+.sidebar-menu { flex: 1; overflow-y: auto; padding: 20px 16px; }
+.menu-section { margin-bottom: 28px; }
+.menu-section h3 { font-size: 11px; font-weight: 600; margin-bottom: 12px; padding-left: 12px; letter-spacing: 1px; color: #64748b; text-transform: uppercase; }
+.menu-section ul { list-style: none; }
+.menu-section li a { display: flex; align-items: center; padding: 12px 14px; color: var(--text-sidebar); text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 10px; transition: all 0.3s; margin-bottom: 6px; }
+.menu-section li a i { width: 24px; margin-right: 10px; font-size: 16px; text-align: center; }
+.menu-section li a:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text-sidebar-hover); transform: translateX(4px); }
+.menu-section li.active a { background-color: var(--primary-blue); color: #ffffff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+
+.sidebar-footer { padding: 20px 16px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+.logout-btn { display: flex; align-items: center; color: #fca5a5; text-decoration: none; font-size: 14px; font-weight: 500; padding: 10px 14px; border-radius: 8px; }
+.logout-btn:hover { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.main-content { flex: 1; overflow-y: auto; padding: 32px 40px; position: relative; }
+.top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+.header-title h1 { font-size: 28px; font-weight: 600; }
+.header-user { display: flex; align-items: center; gap: 16px; background: white; padding: 8px 16px; border-radius: 30px; border: 1px solid var(--border-color); }
+.user-info { text-align: right; display: flex; flex-direction: column; }
+.user-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.badge { background-color: #dbeafe; color: var(--primary-blue); font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: 700; display: inline-block; text-align: center;}
+.user-status { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.status-dot { width: 8px; height: 8px; background-color: var(--status-green); border-radius: 50%; }
+.user-avatar { width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+/* Sections */
+.view-section { display: none; animation: fadeUp 0.4s forwards; }
+.view-section.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Dashboard Cards */
+.stats-section { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
+.stat-card { background: white; padding: 24px; border-radius: 16px; display: flex; align-items: flex-start; gap: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.stat-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.icon-blue { background-color: #eff6ff; color: var(--primary-blue); }
+.icon-orange { background-color: #fffbeb; color: var(--status-orange); }
+.icon-green { background-color: #f0fdf4; color: var(--status-green); }
+.stat-info { display: flex; flex-direction: column; }
+.stat-title { font-size: 13px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; }
+.stat-value { font-size: 32px; font-weight: 700; color: var(--text-primary); }
+
+/* Filters */
+.filters-section { background: white; border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border: 1px solid var(--border-color); }
+.filter-group { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.filter-label { font-weight: 700; font-size: 12px; color: var(--text-secondary); letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;}
+.filter-search { position: relative; display: flex; align-items: center; }
+.search-icon { position: absolute; left: 14px; color: var(--text-secondary); font-size: 14px; }
+.filter-input-search { padding: 10px 14px 10px 38px; border: 1px solid var(--border-color); border-radius: 8px; font-family: var(--font-sans); font-size: 13px; width: 300px; background-color: #f8fafc; }
+.filter-input-search:focus { outline: none; border-color: var(--primary-blue); background-color: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.filter-select { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-family: var(--font-sans); font-size: 13px; cursor: pointer; background-color: #f8fafc; }
+
+/* Buttons & Form Elements */
+.btn-primary { background: var(--primary-blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: 0.2s; }
+.btn-primary:hover { background: var(--primary-blue-hover); }
+.btn-clear { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;}
+.btn-clear:hover { background: #f1f5f9; color: var(--text-primary); }
+.btn-secondary { background: #f1f5f9; color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;}
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-small { padding: 6px 12px; font-size: 12px; }
+.btn-block { width: 100%; padding: 14px; font-size: 15px; }
+.btn-danger { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-danger:hover { background: #dc2626; }
+
+/* Action Buttons (Table) */
+.btn-icon { width: 32px; height: 32px; border-radius: 6px; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; margin-right: 4px; }
+.btn-delete { background: #fef2f2; color: #ef4444; }
+.btn-delete:hover { background: #fee2e2; }
+.btn-edit { background: #eff6ff; color: var(--primary-blue); }
+.btn-edit:hover { background: #dbeafe; }
+.btn-action { background: #eff6ff; color: var(--primary-blue); font-weight: 600; font-family: var(--font-sans); padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; }
+.btn-action:hover { background: #dbeafe; }
+
+.form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
+.form-group label { font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); }
+.form-group input, .form-group select, .form-group textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-family: var(--font-sans); font-size: 13px; background: #f8fafc; transition: all 0.2s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+.form-section-title { font-family: var(--font-heading); font-size: 16px; font-weight: 600; margin: 20px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+
+/* Table */
+.table-section { background: white; border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 24px; }
+.table-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 16px 24px; font-size: 11px; font-weight: 700; color: var(--text-secondary); background: #f8fafc; text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+td { padding: 18px 24px; font-size: 13px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+tbody tr:hover { background-color: #f8fafc; }
+
+/* Status selects (Inline Dropdowns) */
+.status-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 6px 24px 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%2364748b" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position-x: 90%;
+    background-position-y: 50%;
+    background-size: 16px;
+    transition: filter 0.2s;
+}
+.status-select:hover { filter: brightness(0.95); }
+.status-select:focus { outline: 2px solid var(--primary-blue); }
+
+.select-pago-pagado, .select-recibo-completo { background-color: #dcfce7; color: #166534; }
+.select-pago-parcial, .select-recibo-parcial { background-color: #fef3c7; color: #92400e; }
+.select-pago-nopagado, .select-recibo-norecibido { background-color: #fee2e2; color: #991b1b; }
+
+/* Status badges (for non-editable places) */
+.status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.badge-green { background-color: #dcfce7; color: #166534; }
+.badge-red { background-color: #fee2e2; color: #991b1b; }
+.badge-orange { background-color: #fef3c7; color: #92400e; }
+
+/* Dashboard Grid */
+.dashboard-grid { display: flex; gap: 24px; align-items: flex-start; }
+
+/* Modals */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+.modal-content { background: white; width: 1000px; max-width: 95%; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 90vh;}
+.modal-header { padding: 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+.btn-close { background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; }
+.modal-tabs { display: flex; border-bottom: 1px solid var(--border-color); padding: 0 24px; background: #f8fafc;}
+.modal-tab { padding: 16px 24px; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; }
+.modal-tab.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+.modal-body { padding: 24px; overflow-y: auto; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.modal-footer { margin-top: 24px; display: flex; justify-content: flex-end; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px; }
+
+/* Dynamic Items in Modal - Refactored for Grid */
+.item-row-grid { 
+    display: grid; 
+    grid-template-columns: 2fr 0.5fr 1fr 1fr 1.5fr auto; 
+    gap: 12px; 
+    align-items: end; 
+    background: #f8fafc; 
+    padding: 16px; 
+    border-radius: 12px; 
+    border: 1px solid var(--border-color); 
+    margin-bottom: 12px; 
+}
+.btn-remove-item { background: #fee2e2; color: #ef4444; border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+.btn-remove-item:hover { background: #fca5a5; }
+
+/* Charts */
+.charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.chart-card { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.02); padding: 24px; }
+.chart-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+.chart-header h3 { font-size: 16px; color: var(--text-primary); }
+
+/* Empty States */
+.empty-state { padding: 80px 20px; text-align: center; background: white; border-radius: 16px; border: 1px dashed var(--border-color); }
+.empty-icon { font-size: 48px; color: #cbd5e1; margin-bottom: 24px; }
+.empty-state h2 { font-size: 20px; margin-bottom: 12px; }
+.empty-state p { color: var(--text-secondary); max-width: 400px; margin: 0 auto; line-height: 1.6; }
+.truncate { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+</style>
 </head>
 <body>
     <!-- PANTALLA DE LOGIN -->
@@ -444,6 +655,645 @@
     </div>
 
     <!-- Load JS as module to support Firebase SDK imports -->
-    <script type="module" src="script.js"></script>
+    <script type="module">
+// firebase-config.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+// TODO: Reemplaza este objeto con la configuración real de tu proyecto de Firebase
+const firebaseConfig = {
+    apiKey: "TU_API_KEY_AQUI",
+    authDomain: "tu-proyecto.firebaseapp.com",
+    projectId: "tu-proyecto",
+    storageBucket: "tu-proyecto.appspot.com",
+    messagingSenderId: "1234567890",
+    appId: "1:1234567890:web:abcdef123456"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+
+
+
+import { 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { 
+    collection, 
+    onSnapshot, 
+    addDoc, 
+    doc, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    where, 
+    getDocs, 
+    writeBatch 
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+let dbData = []; // Reemplaza a mockData
+let unsubscribeSnapshot = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    initAuth();
+    initNavigation();
+    initModals();
+    initFilters();
+    initCharts();
+    initPurgeTools();
+});
+
+// --- AUTHENTICATION ---
+function initAuth() {
+    const loginForm = document.getElementById('login-form');
+    const loginScreen = document.getElementById('login-screen');
+    const appContent = document.getElementById('app-content');
+    const btnLogout = document.getElementById('btn-logout');
+    const errorMsg = document.getElementById('login-error');
+
+    // Escuchar estado de autenticación
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Usuario logueado
+            document.getElementById('display-user-name').innerHTML = `${user.email.split('@')[0]} <span class="badge">PROCURA</span>`;
+            loginScreen.classList.add('hidden');
+            setTimeout(() => {
+                loginScreen.style.display = 'none';
+                appContent.style.display = 'flex';
+            }, 500);
+            
+            // Iniciar escucha en tiempo real de Firestore
+            startRealtimeListener();
+        } else {
+            // Usuario no logueado
+            appContent.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            setTimeout(() => { loginScreen.classList.remove('hidden'); }, 50);
+            
+            if(unsubscribeSnapshot) unsubscribeSnapshot();
+            dbData = [];
+        }
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        errorMsg.style.display = 'none';
+        
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            errorMsg.textContent = "Error: Credenciales incorrectas o usuario no encontrado.";
+            errorMsg.style.display = 'block';
+        }
+    });
+
+    btnLogout.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await signOut(auth);
+    });
+}
+
+// --- FIRESTORE REALTIME LISTENER ---
+function startRealtimeListener() {
+    const colRef = collection(db, "ordenes_compra");
+    
+    // onSnapshot escucha cambios en tiempo real
+    unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
+        dbData = [];
+        snapshot.forEach((doc) => {
+            dbData.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Ordenamos por mes (ascendente) para mejor visualización
+        dbData.sort((a, b) => a.mes.localeCompare(b.mes));
+        
+        renderData();
+    }, (error) => {
+        console.error("Error al escuchar Firebase: ", error);
+        alert("Asegúrate de que tus Reglas de Firestore permitan la lectura/escritura (por ahora puedes ponerlas en true).");
+    });
+}
+
+// --- NAVIGATION ---
+function initNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('.view-section');
+    const pageTitle = document.getElementById('page-title');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            navItems.forEach(nav => nav.classList.remove('active'));
+            sections.forEach(sec => sec.classList.remove('active'));
+            
+            item.classList.add('active');
+            const targetId = item.getAttribute('data-target');
+            document.getElementById(targetId).classList.add('active');
+            pageTitle.textContent = item.textContent.trim();
+        });
+    });
+}
+
+// --- MODALS & BUTTONS ACTIONS ---
+function initModals() {
+    // Modal Nueva Orden
+    const modalNueva = document.getElementById('modal-nueva-orden');
+    document.getElementById('btn-open-modal')?.addEventListener('click', () => { modalNueva.style.display = 'flex'; });
+    const closeNueva = () => { modalNueva.style.display = 'none'; };
+    document.getElementById('btn-close-modal')?.addEventListener('click', closeNueva);
+    document.getElementById('btn-cancel-modal')?.addEventListener('click', closeNueva);
+    document.getElementById('btn-cancel-bulk')?.addEventListener('click', closeNueva);
+
+    // Tabs
+    const tabs = document.querySelectorAll('.modal-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => { c.classList.remove('active'); c.style.display = 'none'; });
+            tab.classList.add('active');
+            const target = document.getElementById(tab.getAttribute('data-tab'));
+            target.classList.add('active'); target.style.display = 'block';
+        });
+    });
+
+    // Añadir Ítem Dinámico
+    const btnAddItem = document.getElementById('btn-add-item');
+    const itemsContainer = document.getElementById('dynamic-items-container');
+    if(btnAddItem) {
+        btnAddItem.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'item-row-grid';
+            row.innerHTML = `
+                <div class="form-group">
+                    <label>Ítem / Material</label>
+                    <input type="text" class="new-item-desc" placeholder="Descripción del producto">
+                </div>
+                <div class="form-group">
+                    <label>Cant.</label>
+                    <input type="number" class="new-item-cant" placeholder="0" style="min-width: 60px;">
+                </div>
+                <div class="form-group">
+                    <label>Est. Pago</label>
+                    <select class="new-item-pago">
+                        <option value="pagado">Pagado</option>
+                        <option value="parcial">Parcial</option>
+                        <option value="nopagado">No Pagado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Est. Recibo</label>
+                    <select class="new-item-recibo">
+                        <option value="completo">Recibido</option>
+                        <option value="parcial">Parcial</option>
+                        <option value="norecibido">No recibido</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Comentario Rec.</label>
+                    <input type="text" class="new-item-comrec" placeholder="Detalles...">
+                </div>
+                <div class="form-group" style="justify-content: flex-end;">
+                    <button class="btn-remove-item" style="height: 40px; margin-bottom: 0;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            // Añadir listener al boton borrar
+            row.querySelector('.btn-remove-item').addEventListener('click', (e) => {
+                e.currentTarget.parentElement.parentElement.remove();
+            });
+            itemsContainer.appendChild(row);
+        });
+    }
+
+    // Modal Editar
+    const closeEdit = () => { document.getElementById('modal-editar-orden').style.display = 'none'; };
+    document.getElementById('btn-close-edit')?.addEventListener('click', closeEdit);
+    document.getElementById('btn-cancel-edit')?.addEventListener('click', closeEdit);
+
+    // Modal Eliminar
+    const closeDelete = () => { document.getElementById('modal-eliminar').style.display = 'none'; };
+    document.getElementById('btn-close-delete')?.addEventListener('click', closeDelete);
+    document.getElementById('btn-cancel-delete')?.addEventListener('click', closeDelete);
+
+    // Configurar el entorno global (Window) para que los botones de la tabla accedan a funciones
+    window.openEditModal = (id) => {
+        const item = dbData.find(i => i.id === id);
+        if(item) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-comentario-recibo').value = item.comRec !== '-' ? item.comRec : '';
+            document.getElementById('modal-editar-orden').style.display = 'flex';
+        }
+    };
+
+    window.openDeleteModal = (id, ordenCompra) => {
+        document.getElementById('delete-id').value = id;
+        document.getElementById('delete-oc').value = ordenCompra;
+        document.getElementById('delete-oc-label').textContent = ordenCompra;
+        document.getElementById('modal-eliminar').style.display = 'flex';
+    };
+
+    window.changeInlineStatus = async (id, field, value) => {
+        try {
+            const docRef = doc(db, "ordenes_compra", id);
+            await updateDoc(docRef, { [field]: value });
+        } catch(e) {
+            alert("Error al actualizar el estado: " + e.message);
+        }
+    };
+
+    // GUARDAR COMENTARIO (Edit)
+    document.getElementById('btn-save-edit')?.addEventListener('click', async () => {
+        const id = document.getElementById('edit-id').value;
+        let com = document.getElementById('edit-comentario-recibo').value.trim();
+        if(com === '') com = '-';
+        try {
+            const docRef = doc(db, "ordenes_compra", id);
+            await updateDoc(docRef, { comRec: com });
+            closeEdit();
+        } catch(e) { alert("Error al editar: " + e.message); }
+    });
+
+    // ELIMINAR ÍTEM / ORDEN
+    document.getElementById('btn-delete-item')?.addEventListener('click', async () => {
+        const id = document.getElementById('delete-id').value;
+        try {
+            await deleteDoc(doc(db, "ordenes_compra", id));
+            closeDelete();
+        } catch(e) { alert("Error al eliminar: " + e.message); }
+    });
+
+    document.getElementById('btn-delete-order')?.addEventListener('click', async () => {
+        const oc = document.getElementById('delete-oc').value;
+        try {
+            // Batch delete
+            const q = query(collection(db, "ordenes_compra"), where("ordenCompra", "==", oc));
+            const querySnapshot = await getDocs(q);
+            const batch = writeBatch(db);
+            querySnapshot.forEach((docSnap) => {
+                batch.delete(docSnap.ref);
+            });
+            await batch.commit();
+            closeDelete();
+        } catch(e) { alert("Error al eliminar la orden: " + e.message); }
+    });
+
+    // GUARDAR NUEVA ORDEN (Individual / Multiple items)
+    document.getElementById('btn-save-order')?.addEventListener('click', async () => {
+        const oc = document.getElementById('new-orden-compra').value.trim();
+        const rc = document.getElementById('new-recibo-compra').value.trim();
+        const coord = document.getElementById('new-coordinacion').value.trim();
+        const proc = document.getElementById('new-procura').value.trim();
+        const mes = document.getElementById('new-mes').value;
+        const comSol = document.getElementById('new-com-sol').value.trim() || '-';
+
+        if(!oc || !mes || !proc) return alert("Completa al menos el N° OC, Mes y Personal de Procura.");
+
+        const rows = document.querySelectorAll('#dynamic-items-container .item-row-grid');
+        const batch = writeBatch(db);
+        const colRef = collection(db, "ordenes_compra");
+
+        rows.forEach(row => {
+            const desc = row.querySelector('.new-item-desc').value.trim();
+            const cant = row.querySelector('.new-item-cant').value || 0;
+            if(!desc) return;
+
+            const pago = row.querySelector('.new-item-pago').value;
+            const recibo = row.querySelector('.new-item-recibo').value;
+            const comRec = row.querySelector('.new-item-comrec').value.trim() || '-';
+
+            const newDocRef = doc(colRef); // Crea un ID automático
+            batch.set(newDocRef, {
+                ordenCompra: oc,
+                reciboCompra: rc || '-',
+                coordinacion: coord || '-',
+                procura: proc,
+                mes: mes,
+                comSol: comSol,
+                item: desc,
+                cantidad: parseInt(cant),
+                estadoPago: pago,
+                estadoRecibo: recibo,
+                comRec: comRec,
+                timestamp: new Date()
+            });
+        });
+
+        try {
+            await batch.commit();
+            alert("Orden guardada exitosamente en Firebase.");
+            closeNueva();
+            // Limpiar modal
+            document.getElementById('new-orden-compra').value = '';
+            document.getElementById('new-recibo-compra').value = '';
+            document.getElementById('new-com-sol').value = '';
+            // Resetea a un solo item
+            document.getElementById('dynamic-items-container').innerHTML = '';
+            document.getElementById('btn-add-item').click();
+        } catch(e) { alert("Error guardando orden: " + e.message); }
+    });
+
+    // GUARDAR SUBIDA MASIVA
+    document.getElementById('btn-save-bulk')?.addEventListener('click', async () => {
+        const text = document.getElementById('bulk-text').value.trim();
+        if(!text) return;
+
+        const lines = text.split('\n');
+        const batch = writeBatch(db);
+        const colRef = collection(db, "ordenes_compra");
+        let added = 0;
+
+        lines.forEach(line => {
+            const parts = line.split('|').map(s => s.trim());
+            // Estructura: OC | Item | Cantidad | RC | Procura | Mes | pago | recibo
+            if(parts.length >= 8) {
+                const newDocRef = doc(colRef);
+                batch.set(newDocRef, {
+                    ordenCompra: parts[0],
+                    item: parts[1],
+                    cantidad: parseInt(parts[2]) || 0,
+                    reciboCompra: parts[3],
+                    procura: parts[4],
+                    mes: parts[5],
+                    estadoPago: parts[6].toLowerCase(),
+                    estadoRecibo: parts[7].toLowerCase(),
+                    coordinacion: '-',
+                    comSol: '-',
+                    comRec: '-',
+                    timestamp: new Date()
+                });
+                added++;
+            }
+        });
+
+        if(added > 0) {
+            try {
+                await batch.commit();
+                alert(`Se procesaron ${added} ítems exitosamente.`);
+                closeNueva();
+                document.getElementById('bulk-text').value = '';
+            } catch(e) { alert("Error subida masiva: " + e.message); }
+        } else {
+            alert("No se encontró ninguna línea con el formato correcto.");
+        }
+    });
+}
+
+function initFilters() {
+    // Resumen
+    const filtersRes = ['filter-resumen-mes', 'filter-resumen-oc', 'filter-resumen-recibo', 'filter-resumen-pago'];
+    filtersRes.forEach(id => {
+        document.getElementById(id)?.addEventListener('input', renderData);
+        document.getElementById(id)?.addEventListener('change', renderData);
+    });
+    
+    document.getElementById('btn-clear-resumen')?.addEventListener('click', () => {
+        document.getElementById('filter-resumen-mes').value = '';
+        document.getElementById('filter-resumen-oc').value = '';
+        document.getElementById('filter-resumen-recibo').value = 'todos';
+        document.getElementById('filter-resumen-pago').value = 'todos';
+        renderData();
+    });
+
+    // Ordenes
+    const filtersOrd = ['filter-ordenes-text', 'filter-ordenes-mes', 'filter-ordenes-pago', 'filter-ordenes-recibo'];
+    filtersOrd.forEach(id => {
+        document.getElementById(id)?.addEventListener('input', renderData);
+        document.getElementById(id)?.addEventListener('change', renderData);
+    });
+
+    document.getElementById('btn-clear-ordenes')?.addEventListener('click', () => {
+        document.getElementById('filter-ordenes-text').value = '';
+        document.getElementById('filter-ordenes-mes').value = '';
+        document.getElementById('filter-ordenes-pago').value = 'todos';
+        document.getElementById('filter-ordenes-recibo').value = 'todos';
+        renderData();
+    });
+}
+
+// --- HERRAMIENTAS DE DEPURACIÓN ---
+function initPurgeTools() {
+    // Purge por Mes
+    document.getElementById('btn-purge-month')?.addEventListener('click', async () => {
+        const mes = document.getElementById('purge-month').value;
+        if(!mes) return alert("Selecciona un mes.");
+        if(confirm(`¡ADVERTENCIA!\nEstás a punto de ELIMINAR TODOS los ítems del mes ${mes}.\nEsta acción es irreversible en Firebase.\n¿Deseas continuar?`)) {
+            try {
+                const q = query(collection(db, "ordenes_compra"), where("mes", "==", mes));
+                const snap = await getDocs(q);
+                if(snap.empty) return alert("No se encontraron registros para ese mes.");
+                
+                const batch = writeBatch(db);
+                snap.forEach(d => batch.delete(d.ref));
+                await batch.commit();
+                alert("Depuración del mes completada con éxito.");
+                document.getElementById('purge-month').value = '';
+            } catch(e) { alert("Error: " + e.message); }
+        }
+    });
+
+    // Purge por OC
+    document.getElementById('btn-purge-oc')?.addEventListener('click', async () => {
+        const oc = document.getElementById('purge-oc').value.trim();
+        if(!oc) return alert("Escribe un N° de Orden de Compra.");
+        if(confirm(`¡ADVERTENCIA!\nEstás a punto de ELIMINAR TODA la orden ${oc}.\nEsta acción es irreversible.\n¿Deseas continuar?`)) {
+            try {
+                const q = query(collection(db, "ordenes_compra"), where("ordenCompra", "==", oc));
+                const snap = await getDocs(q);
+                if(snap.empty) return alert("No se encontraron registros para esa orden.");
+                
+                const batch = writeBatch(db);
+                snap.forEach(d => batch.delete(d.ref));
+                await batch.commit();
+                alert("Depuración de la orden completada con éxito.");
+                document.getElementById('purge-oc').value = '';
+            } catch(e) { alert("Error: " + e.message); }
+        }
+    });
+}
+
+
+function getBadgeHtml(status, type, id) {
+    if (type === 'pago') {
+        const bgClass = status === 'pagado' ? 'select-pago-pagado' : (status === 'parcial' ? 'select-pago-parcial' : 'select-pago-nopagado');
+        return `
+            <select class="status-select ${bgClass}" onchange="window.changeInlineStatus('${id}', 'estadoPago', this.value)">
+                <option value="pagado" ${status === 'pagado' ? 'selected' : ''}>Pagado</option>
+                <option value="parcial" ${status === 'parcial' ? 'selected' : ''}>Parcial</option>
+                <option value="nopagado" ${status === 'nopagado' ? 'selected' : ''}>No Pagado</option>
+            </select>
+        `;
+    } else {
+        const bgClass = status === 'completo' ? 'select-recibo-completo' : (status === 'parcial' ? 'select-recibo-parcial' : 'select-recibo-norecibido');
+        return `
+            <select class="status-select ${bgClass}" onchange="window.changeInlineStatus('${id}', 'estadoRecibo', this.value)">
+                <option value="completo" ${status === 'completo' ? 'selected' : ''}>Recibido</option>
+                <option value="parcial" ${status === 'parcial' ? 'selected' : ''}>Parcial</option>
+                <option value="norecibido" ${status === 'norecibido' ? 'selected' : ''}>No Recibido</option>
+            </select>
+        `;
+    }
+}
+
+// --- RENDERING ---
+function renderData() {
+    const tableOrdenes = document.getElementById('table-body-ordenes');
+    const tableFaltantes = document.getElementById('table-body-faltantes');
+    
+    if(!tableOrdenes || !tableFaltantes) return;
+
+    // Filtros Resumen
+    const fResMes = document.getElementById('filter-resumen-mes')?.value || '';
+    const fResOc = document.getElementById('filter-resumen-oc')?.value.toLowerCase() || '';
+    const fResRec = document.getElementById('filter-resumen-recibo')?.value || 'todos';
+    const fResPag = document.getElementById('filter-resumen-pago')?.value || 'todos';
+
+    // Filtros Ordenes
+    const fOrdTxt = document.getElementById('filter-ordenes-text')?.value.toLowerCase() || '';
+    const fOrdMes = document.getElementById('filter-ordenes-mes')?.value || '';
+    const fOrdPag = document.getElementById('filter-ordenes-pago')?.value || 'todos';
+    const fOrdRec = document.getElementById('filter-ordenes-recibo')?.value || 'todos';
+
+    tableOrdenes.innerHTML = '';
+    tableFaltantes.innerHTML = '';
+    
+    let receivedCount = 0; let pendingCount = 0;
+    let totalCount = 0;
+
+    dbData.forEach(row => {
+        // Sanear datos indefinidos por si acaso
+        const oc = (row.ordenCompra || '').toLowerCase();
+        const rc = (row.reciboCompra || '').toLowerCase();
+        const item = (row.item || '').toLowerCase();
+        const procura = (row.procura || '');
+
+        // Lógica VISTA RESUMEN
+        let passResumen = true;
+        if(fResMes && row.mes !== fResMes) passResumen = false;
+        if(fResOc && !oc.includes(fResOc)) passResumen = false;
+        if(fResRec === 'recibidos' && row.estadoRecibo !== 'completo') passResumen = false;
+        if(fResRec === 'pendientes' && row.estadoRecibo === 'completo') passResumen = false;
+        if(fResPag === 'pagados' && row.estadoPago !== 'pagado') passResumen = false;
+        if(fResPag === 'proceso' && row.estadoPago === 'pagado') passResumen = false;
+
+        if (passResumen) {
+            totalCount++;
+            if (row.estadoRecibo === 'completo') receivedCount++;
+            else pendingCount++;
+
+            if (row.estadoRecibo !== 'completo') {
+                const trFaltantes = document.createElement('tr');
+                trFaltantes.innerHTML = `
+                    <td style="font-weight: 500;">${row.item}</td>
+                    <td style="font-weight: 700; color: var(--status-red);">${row.cantidad} und.</td>
+                    <td style="color: var(--text-secondary); font-size: 12px;">${procura}</td>
+                    <td><span class="badge" style="background:#f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color);">${row.ordenCompra}</span></td>
+                    <td><span class="badge" style="background:#f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color);">${row.reciboCompra}</span></td>
+                `;
+                tableFaltantes.appendChild(trFaltantes);
+            }
+        }
+
+        // Lógica VISTA ORDENES
+        let passOrdenes = true;
+        if(fOrdMes && row.mes !== fOrdMes) passOrdenes = false;
+        if(fOrdPag !== 'todos' && row.estadoPago !== fOrdPag) passOrdenes = false;
+        if(fOrdRec !== 'todos' && row.estadoRecibo !== fOrdRec) passOrdenes = false;
+        if(fOrdTxt && !oc.includes(fOrdTxt) && !rc.includes(fOrdTxt) && !item.includes(fOrdTxt)) passOrdenes = false;
+
+        if (passOrdenes) {
+            const trOrdenes = document.createElement('tr');
+            trOrdenes.innerHTML = `
+                <td style="font-weight: 600;">${row.ordenCompra}</td>
+                <td style="font-weight: 700; color: var(--primary-blue);">${row.reciboCompra}</td>
+                <td>${row.coordinacion || '-'}</td>
+                <td style="font-weight: 600; font-size: 11px;">${procura}</td>
+                <td class="truncate" title="${row.comSol}" style="font-size: 12px; color: var(--text-secondary);">${row.comSol || '-'}</td>
+                <td class="truncate" style="font-weight: 500;" title="${row.item}">${row.item}</td>
+                <td style="font-weight: 700; text-align: center;">${row.cantidad}</td>
+                <td>${getBadgeHtml(row.estadoPago, 'pago', row.id)}</td>
+                <td>${getBadgeHtml(row.estadoRecibo, 'recibo', row.id)}</td>
+                <td class="truncate" title="${row.comRec}" style="font-size: 12px; color: var(--text-secondary);">${row.comRec || '-'}</td>
+                <td style="white-space: nowrap;">
+                    <button class="btn-icon btn-edit" onclick="window.openEditModal('${row.id}')" title="Editar Comentario"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon btn-delete" onclick="window.openDeleteModal('${row.id}', '${row.ordenCompra}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tableOrdenes.appendChild(trOrdenes);
+        }
+    });
+
+    document.getElementById('stat-total').textContent = totalCount;
+    document.getElementById('stat-pending').textContent = pendingCount;
+    document.getElementById('stat-received').textContent = receivedCount;
+}
+
+// Chart.js (Funcionalidad decorativa base que luego puedes conectar a dbData si lo requieres)
+function initCharts() {
+    const ctxMonthly = document.getElementById('monthlyChart');
+    const ctxStatus = document.getElementById('statusChart');
+
+    if (!ctxMonthly || !ctxStatus) return;
+
+    new Chart(ctxMonthly, {
+        type: 'bar',
+        data: {
+            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio (Proy.)'],
+            datasets: [
+                {
+                    label: 'Cantidad de Productos Solicitados',
+                    data: [150, 200, 180, 320, 450, 120],
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderRadius: 6
+                },
+                {
+                    label: 'Cantidad de Órdenes Generadas',
+                    data: [12, 18, 15, 25, 40, 8],
+                    type: 'line',
+                    borderColor: '#f59e0b',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+            labels: ['Recibidos', 'Pendientes', 'Parciales'],
+            datasets: [{
+                data: [45, 30, 15],
+                backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            cutout: '70%'
+        }
+    });
+}
+
+</script>
 </body>
 </html>
+
