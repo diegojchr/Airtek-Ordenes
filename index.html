@@ -698,12 +698,15 @@ tbody tr:hover { background-color: #f8fafc; }
             </div>
             <div class="modal-body">
                 <input type="hidden" id="retiro-id">
-                <p style="margin-bottom: 20px; color: var(--text-secondary); line-height: 1.5;">
-                    Estás a punto de entregar el ítem <strong id="retiro-item-label" style="color: var(--text-primary);"></strong> correspondiente a la orden <strong id="retiro-oc-label" style="color: var(--text-primary);"></strong>.
-                </p>
+                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color);">
+                    <p style="margin: 0; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                        Estás a punto de entregar el ítem <br><strong id="retiro-item-label" style="color: var(--text-primary); font-size: 14px; display: block; margin: 4px 0;"></strong> 
+                        correspondiente a la orden <strong id="retiro-oc-label" style="color: var(--primary-blue);"></strong>
+                    </p>
+                </div>
                 <div class="form-group">
-                    <label>¿Quién retira este material?</label>
-                    <input type="text" id="retiro-persona" placeholder="Nombre completo del trabajador">
+                    <label style="font-weight: 600; font-size: 13px; color: var(--text-primary);">¿Quién retira este material?</label>
+                    <input type="text" id="retiro-persona" placeholder="Ingresa el nombre completo" style="margin-top: 8px;">
                 </div>
             </div>
             <div class="modal-footer">
@@ -1300,8 +1303,8 @@ function renderData() {
                     <td style="font-weight: 700;">${row.cantidad}</td>
                     <td>${getBadgeHtml(row.estadoRecibo, 'recibo', row.id)}</td>
                     <td style="color: var(--text-secondary); font-size: 12px;">${row.comRec || '-'}</td>
-                    <td>
-                        <button class="btn-secondary" style="color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; width: 100%;" onclick="window.openRetiroModal('${row.id}')">
+                    <td style="text-align: center; vertical-align: middle;">
+                        <button class="btn-secondary" style="color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; padding: 6px 16px; font-size: 12px; border-radius: 20px; white-space: nowrap;" onclick="window.openRetiroModal('${row.id}')">
                             <i class="fa-solid fa-check"></i> Marcar Retirado
                         </button>
                     </td>
