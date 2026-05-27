@@ -9,6 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
 :root {
     /* Premium Airtek Colors */
@@ -249,6 +253,9 @@ tbody tr:hover { background-color: #f8fafc; }
                         <li class="nav-item" data-target="view-ordenes">
                             <a href="#"><i class="fa-solid fa-file-invoice"></i> Órdenes de Compra</a>
                         </li>
+                        <li class="nav-item" data-target="view-retiros">
+                            <a href="#"><i class="fa-solid fa-box-open"></i> Ítems para Retirar</a>
+                        </li>
                         <li class="nav-item" data-target="view-graficas">
                             <a href="#"><i class="fa-solid fa-chart-line"></i> Gráficas y Métricas</a>
                         </li>
@@ -382,7 +389,11 @@ tbody tr:hover { background-color: #f8fafc; }
                         </div>
                         <button class="btn-clear" id="btn-clear-ordenes" style="margin-left: 10px;"><i class="fa-solid fa-eraser"></i> Limpiar</button>
                         
-                        <button class="btn-primary" id="btn-open-modal" style="margin-left: auto;"><i class="fa-solid fa-plus"></i> Nueva Orden</button>
+                        <div style="margin-left: auto; display: flex; gap: 10px;">
+                            <button class="btn-secondary" id="btn-export-excel" style="color: #16a34a; border-color: #bbf7d0; background: #f0fdf4;"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                            <button class="btn-secondary" id="btn-export-pdf" style="color: #dc2626; border-color: #fecaca; background: #fef2f2;"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                            <button class="btn-primary" id="btn-open-modal"><i class="fa-solid fa-plus"></i> Nueva Orden</button>
+                        </div>
                     </div>
                 </section>
 
@@ -408,6 +419,52 @@ tbody tr:hover { background-color: #f8fafc; }
                                 </tr>
                             </thead>
                             <tbody id="table-body-ordenes"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VISTA: RETIROS -->
+            <div id="view-retiros" class="view-section">
+                <section class="table-section" style="margin-bottom: 24px;">
+                    <div class="table-header">
+                        <h3>PENDIENTES POR RETIRAR</h3>
+                        <span class="badge badge-green" id="badge-pendientes-retiro">0 ítems listos</span>
+                    </div>
+                    <div class="table-container">
+                        <table style="min-width: 1000px;">
+                            <thead>
+                                <tr>
+                                    <th>N° ORDEN COMPRA</th>
+                                    <th>COORDINACIÓN</th>
+                                    <th>ÍTEM</th>
+                                    <th>CANT.</th>
+                                    <th>ESTADO RECIBO</th>
+                                    <th>COMENTARIO RECEPCIÓN</th>
+                                    <th>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-retiros-pendientes"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="table-section">
+                    <div class="table-header">
+                        <h3>ACTIVIDAD RECIENTE (ÍTEMS RETIRADOS)</h3>
+                    </div>
+                    <div class="table-container">
+                        <table style="min-width: 800px;">
+                            <thead>
+                                <tr>
+                                    <th>FECHA DE RETIRO</th>
+                                    <th>RETIRADO POR</th>
+                                    <th>N° ORDEN COMPRA</th>
+                                    <th>ÍTEM</th>
+                                    <th>CANT.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-retiros-historial"></tbody>
                         </table>
                     </div>
                 </section>
@@ -563,16 +620,22 @@ tbody tr:hover { background-color: #f8fafc; }
                 </div>
 
                 <div id="tab-masiva" class="tab-content" style="display: none;">
-                    <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
-                        Pega aquí la lista de materiales separados por la barra vertical " | ". <br>
-                        <strong>Estructura requerida por línea:</strong> N° OC | Materiales | Cantidad | N° Recibo | Procura | Mes (YYYY-MM) | Estado pago (pagado/parcial/nopagado) | Estado recibo (completo/parcial/norecibido)
-                    </p>
+                    <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #bfdbfe;">
+                        <p style="margin-bottom: 8px; color: #1e3a8a; font-size: 14px; font-weight: 600;">
+                            <i class="fa-solid fa-file-excel"></i> Copia y pega las filas directo desde Excel
+                        </p>
+                        <p style="color: #1e40af; font-size: 12px; line-height: 1.5;">
+                            Orden exacto de las 11 columnas en tu Excel:<br>
+                            <strong>1. Mes (YYYY-MM) | 2. N° Orden | 3. Coordinación | 4. Comentario Solicitud | 5. N° Recibo | 6. Personal de Procura | 7. Ítem | 8. Cantidad | 9. Est. Pago | 10. Est. Recibo | 11. Com. Recepción</strong>
+                        </p>
+                    </div>
+
                     <div class="form-group">
-                        <textarea id="bulk-text" rows="10" placeholder="OC-001 | ESMERIL | 1 | F-PRO-06651 | JUAN PEREZ | 2026-05 | pagado | norecibido"></textarea>
+                        <textarea id="bulk-text" rows="10" placeholder="Pega aquí las filas copiadas desde tu Excel..."></textarea>
                     </div>
                     <div class="modal-footer">
                         <button class="btn-clear" id="btn-cancel-bulk">Cancelar</button>
-                        <button class="btn-primary" id="btn-save-bulk">Procesar Subida Masiva</button>
+                        <button class="btn-primary" id="btn-save-bulk">Procesar Excel</button>
                     </div>
                 </div>
             </div>
@@ -618,10 +681,34 @@ tbody tr:hover { background-color: #f8fafc; }
                     <br><br>¿Deseas eliminar solo este ítem o deseas eliminar <strong>TODA</strong> la orden de compra con todos sus ítems?
                 </p>
             </div>
-            <div class="modal-footer" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn-clear" id="btn-cancel-delete">Cancelar</button>
-                <button class="btn-secondary" id="btn-delete-item" style="color: #ef4444;">Eliminar Solo Ítem</button>
-                <button class="btn-danger" id="btn-delete-order">Eliminar Toda la Orden</button>
+            <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn-danger btn-block" id="btn-delete-order">Eliminar Toda la Orden de Compra</button>
+                <button class="btn-secondary btn-block" id="btn-delete-item" style="color: #ef4444;">Eliminar Solo este Ítem</button>
+                <button class="btn-clear btn-block" id="btn-cancel-delete">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR RETIRO -->
+    <div id="modal-retiro" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="width: 450px; max-width: 95%;">
+            <div class="modal-header">
+                <h2>Registrar Retiro de Ítem</h2>
+                <button class="btn-close" id="btn-close-retiro"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="retiro-id">
+                <p style="margin-bottom: 20px; color: var(--text-secondary); line-height: 1.5;">
+                    Estás a punto de entregar el ítem <strong id="retiro-item-label" style="color: var(--text-primary);"></strong> correspondiente a la orden <strong id="retiro-oc-label" style="color: var(--text-primary);"></strong>.
+                </p>
+                <div class="form-group">
+                    <label>¿Quién retira este material?</label>
+                    <input type="text" id="retiro-persona" placeholder="Nombre completo del trabajador">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-clear" id="btn-cancel-retiro">Cancelar</button>
+                <button class="btn-primary" id="btn-confirm-retiro">Confirmar Entrega</button>
             </div>
         </div>
     </div>
@@ -682,6 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFilters();
     initCharts();
     initPurgeTools();
+    initExports();
 });
 
 // --- FIRESTORE REALTIME LISTENER ---
@@ -832,6 +920,39 @@ function initModals() {
         }
     };
 
+    window.openRetiroModal = (id) => {
+        const item = dbData.find(i => i.id === id);
+        if(!item) return;
+        document.getElementById('retiro-id').value = id;
+        document.getElementById('retiro-oc-label').textContent = item.ordenCompra;
+        document.getElementById('retiro-item-label').textContent = item.item;
+        document.getElementById('retiro-persona').value = '';
+        document.getElementById('modal-retiro').style.display = 'flex';
+    };
+
+    const closeRetiro = () => { document.getElementById('modal-retiro').style.display = 'none'; };
+    document.getElementById('btn-close-retiro')?.addEventListener('click', closeRetiro);
+    document.getElementById('btn-cancel-retiro')?.addEventListener('click', closeRetiro);
+
+    document.getElementById('btn-confirm-retiro')?.addEventListener('click', async () => {
+        const id = document.getElementById('retiro-id').value;
+        const persona = document.getElementById('retiro-persona').value.trim();
+        if(!persona) return alert("Por favor ingresa el nombre de quien retira.");
+
+        try {
+            const docRef = doc(db, "ordenes_compra", id);
+            await updateDoc(docRef, { 
+                estadoRetiro: "retirado",
+                retiradoPor: persona,
+                fechaRetiro: new Date().toISOString()
+            });
+            closeRetiro();
+            alert("Retiro registrado con éxito.");
+        } catch(e) {
+            alert("Error al registrar retiro: " + e.message);
+        }
+    });
+
     // GUARDAR COMENTARIO (Edit)
     document.getElementById('btn-save-edit')?.addEventListener('click', async () => {
         const id = document.getElementById('edit-id').value;
@@ -911,7 +1032,7 @@ function initModals() {
 
         try {
             await batch.commit();
-            alert("Orden guardada exitosamente en Firebase.");
+            alert("Orden guardada con exito.");
             closeNueva();
             // Limpiar modal
             document.getElementById('new-orden-compra').value = '';
@@ -934,22 +1055,30 @@ function initModals() {
         let added = 0;
 
         lines.forEach(line => {
-            const parts = line.split('|').map(s => s.trim());
-            // Estructura: OC | Item | Cantidad | RC | Procura | Mes | pago | recibo
-            if(parts.length >= 8) {
+            if(!line.trim()) return;
+            
+            let parts = line.split('\t');
+            if(parts.length < 5) parts = line.split('|');
+            if(parts.length < 5) parts = line.split('-');
+            
+            parts = parts.map(s => s.trim());
+            
+            // Indices:
+            // 0: Mes | 1: OC | 2: Coord | 3: ComSol | 4: RC | 5: Procura | 6: Item | 7: Cant | 8: Pago | 9: Recibo | 10: ComRec
+            if(parts.length >= 7) { // Mínimo hasta el ítem
                 const newDocRef = doc(colRef);
                 batch.set(newDocRef, {
-                    ordenCompra: parts[0],
-                    item: parts[1],
-                    cantidad: parseInt(parts[2]) || 0,
-                    reciboCompra: parts[3],
-                    procura: parts[4],
-                    mes: parts[5],
-                    estadoPago: parts[6].toLowerCase(),
-                    estadoRecibo: parts[7].toLowerCase(),
-                    coordinacion: '-',
-                    comSol: '-',
-                    comRec: '-',
+                    mes: parts[0] || new Date().toISOString().slice(0,7),
+                    ordenCompra: parts[1] || '-',
+                    coordinacion: parts[2] || '-',
+                    comSol: parts[3] || '-',
+                    reciboCompra: parts[4] || '-',
+                    procura: parts[5] || 'ADMIN',
+                    item: parts[6] || '-',
+                    cantidad: parseInt(parts[7]) || 0,
+                    estadoPago: (parts[8] || 'nopagado').toLowerCase(),
+                    estadoRecibo: (parts[9] || 'norecibido').toLowerCase(),
+                    comRec: parts[10] || '-',
                     timestamp: new Date()
                 });
                 added++;
@@ -959,12 +1088,12 @@ function initModals() {
         if(added > 0) {
             try {
                 await batch.commit();
-                alert(`Se procesaron ${added} ítems exitosamente.`);
+                alert("Orden guardada con exito.");
                 closeNueva();
                 document.getElementById('bulk-text').value = '';
             } catch(e) { alert("Error subida masiva: " + e.message); }
         } else {
-            alert("No se encontró ninguna línea con el formato correcto.");
+            alert("No se encontró ninguna línea con el formato correcto (faltan columnas).");
         }
     });
 }
@@ -1086,9 +1215,15 @@ function renderData() {
 
     tableOrdenes.innerHTML = '';
     tableFaltantes.innerHTML = '';
+    const tableRetirosPendientes = document.getElementById('table-body-retiros-pendientes');
+    const tableRetirosHistorial = document.getElementById('table-body-retiros-historial');
+    if (tableRetirosPendientes) tableRetirosPendientes.innerHTML = '';
+    
+    const historialRetiros = [];
     
     let receivedCount = 0; let pendingCount = 0;
     let totalCount = 0;
+    let pendientesRetiroCount = 0;
 
     dbData.forEach(row => {
         // Sanear datos indefinidos por si acaso
@@ -1151,7 +1286,49 @@ function renderData() {
             `;
             tableOrdenes.appendChild(trOrdenes);
         }
+        // Lógica VISTA RETIROS
+        if (tableRetirosPendientes) {
+            if (row.estadoRetiro === 'retirado') {
+                historialRetiros.push(row);
+            } else if (row.estadoRecibo === 'completo' || row.estadoRecibo === 'parcial') {
+                pendientesRetiroCount++;
+                const trPendiente = document.createElement('tr');
+                trPendiente.innerHTML = `
+                    <td style="font-weight: 600;">${row.ordenCompra}</td>
+                    <td>${row.coordinacion || '-'}</td>
+                    <td style="font-weight: 500;">${row.item}</td>
+                    <td style="font-weight: 700;">${row.cantidad}</td>
+                    <td>${getBadgeHtml(row.estadoRecibo, 'recibo', row.id)}</td>
+                    <td style="color: var(--text-secondary); font-size: 12px;">${row.comRec || '-'}</td>
+                    <td>
+                        <button class="btn-secondary" style="color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; width: 100%;" onclick="window.openRetiroModal('${row.id}')">
+                            <i class="fa-solid fa-check"></i> Marcar Retirado
+                        </button>
+                    </td>
+                `;
+                tableRetirosPendientes.appendChild(trPendiente);
+            }
+        }
     });
+
+    if (tableRetirosHistorial) {
+        tableRetirosHistorial.innerHTML = '';
+        historialRetiros.sort((a, b) => new Date(b.fechaRetiro) - new Date(a.fechaRetiro)).forEach(row => {
+            const fechaStr = new Date(row.fechaRetiro).toLocaleString();
+            const trHistorial = document.createElement('tr');
+            trHistorial.innerHTML = `
+                <td style="font-size: 12px; color: var(--text-secondary);"><i class="fa-regular fa-clock"></i> ${fechaStr}</td>
+                <td style="font-weight: 600; color: #1e40af;">${row.retiradoPor}</td>
+                <td style="font-weight: 600;">${row.ordenCompra}</td>
+                <td>${row.item}</td>
+                <td style="font-weight: 700;">${row.cantidad}</td>
+            `;
+            tableRetirosHistorial.appendChild(trHistorial);
+        });
+    }
+
+    const badgePendientes = document.getElementById('badge-pendientes-retiro');
+    if (badgePendientes) badgePendientes.textContent = pendientesRetiroCount + " ítems listos";
 
     document.getElementById('stat-total').textContent = totalCount;
     document.getElementById('stat-pending').textContent = pendingCount;
@@ -1255,6 +1432,75 @@ function updateCharts() {
     monthlyChartInstance.update();
 }
 
+// --- EXPORT LOGIC ---
+function initExports() {
+    document.getElementById('btn-export-excel')?.addEventListener('click', () => {
+        if (!dbData || dbData.length === 0) return alert("No hay datos para exportar.");
+
+        const dataForExcel = dbData.map(row => ({
+            "Mes": row.mes || '-',
+            "N° Orden": row.ordenCompra || '-',
+            "Coordinación": row.coordinacion || '-',
+            "Comentario Solicitud": row.comSol || '-',
+            "N° Recibo": row.reciboCompra || '-',
+            "Personal de Procura": row.procura || '-',
+            "Ítem": row.item || '-',
+            "Cantidad": row.cantidad || 0,
+            "Est. Pago": row.estadoPago || '-',
+            "Est. Recibo": row.estadoRecibo || '-',
+            "Com. Recepción": row.comRec || '-'
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataForExcel);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Historial");
+        XLSX.writeFile(workbook, "Historial_Ordenes_Airtek.xlsx");
+    });
+
+    document.getElementById('btn-export-pdf')?.addEventListener('click', () => {
+        if (!dbData || dbData.length === 0) return alert("No hay datos para exportar.");
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape');
+        
+        doc.setFontSize(18);
+        doc.text("Historial de Órdenes de Compra - Airtek", 14, 22);
+        
+        const tableColumn = ["Mes", "OC", "Coord.", "Com. Sol.", "Recibo", "Procura", "Ítem", "Cant.", "Pago", "Recibo", "Com. Rec."];
+        const tableRows = [];
+
+        dbData.forEach(row => {
+            tableRows.push([
+                row.mes || '-',
+                row.ordenCompra || '-',
+                row.coordinacion || '-',
+                row.comSol || '-',
+                row.reciboCompra || '-',
+                row.procura || '-',
+                row.item || '-',
+                row.cantidad || 0,
+                row.estadoPago || '-',
+                row.estadoRecibo || '-',
+                row.comRec || '-'
+            ]);
+        });
+
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [37, 99, 235] },
+            columnStyles: {
+                3: { cellWidth: 30 }, // Comentario Solicitud
+                6: { cellWidth: 40 }, // Ítem
+                10: { cellWidth: 30 } // Comentario Recepción
+            }
+        });
+
+        doc.save("Historial_Ordenes_Airtek.pdf");
+    });
+}
 </script>
 </body>
 </html>
