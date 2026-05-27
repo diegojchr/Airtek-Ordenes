@@ -301,7 +301,7 @@ tbody tr:hover { background-color: #f8fafc; }
                         </div>
                         <div class="filter-search" style="margin-left: 5px;">
                             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" class="filter-input-search" id="filter-resumen-oc" placeholder="N° Orden Compra..." style="width: 150px; padding-left: 35px;">
+                            <input type="text" list="list-ordenes" class="filter-input-search" id="filter-resumen-oc" placeholder="N° Orden Compra..." style="width: 150px; padding-left: 35px;">
                         </div>
                         <div class="filter-item">
                             <select class="filter-select" id="filter-resumen-recibo">
@@ -339,18 +339,17 @@ tbody tr:hover { background-color: #f8fafc; }
                 <div class="dashboard-grid">
                     <section class="table-section" style="flex: 2;">
                         <div class="table-header">
-                            <h3>VISUAL: LOS QUE FALTAN (ÍTEMS PENDIENTES)</h3>
-                            <span class="badge badge-red">Prioridad de Procura</span>
+                            <h3>VISUALIZACIÓN DE ÍTEMS (SEGÚN FILTROS)</h3>
                         </div>
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>ÍTEM</th>
-                                        <th>CANTIDAD FALTANTE</th>
+                                        <th>CANTIDAD</th>
                                         <th>PERSONAL PROCURA</th>
                                         <th>N° ORDEN COMPRA</th>
-                                        <th>N° RECIBO DE COMPRA</th>
+                                        <th>ESTADO</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-body-faltantes"></tbody>
@@ -366,7 +365,8 @@ tbody tr:hover { background-color: #f8fafc; }
                     <div class="filter-group" style="width: 100%;">
                         <div class="filter-search">
                             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" class="filter-input-search" id="filter-ordenes-text" placeholder="N° OC, RC o Ítem..." style="width: 180px;">
+                            <input type="text" list="list-ordenes" class="filter-input-search" id="filter-ordenes-text" placeholder="N° OC, RC o Ítem..." style="width: 180px;">
+                            <datalist id="list-ordenes"></datalist>
                         </div>
                         <div class="filter-item">
                             <input type="month" class="filter-select" id="filter-ordenes-mes" title="Mes">
@@ -790,9 +790,23 @@ function startRealtimeListener() {
     // onSnapshot escucha cambios en tiempo real
     unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
         dbData = [];
+        const uniqueOcsForDatalist = new Set();
+        
         snapshot.forEach((doc) => {
-            dbData.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            dbData.push({ id: doc.id, ...data });
+            if(data.ordenCompra) uniqueOcsForDatalist.add(data.ordenCompra);
         });
+        
+        const datalist = document.getElementById('list-ordenes');
+        if (datalist) {
+            datalist.innerHTML = '';
+            Array.from(uniqueOcsForDatalist).sort().forEach(oc => {
+                const option = document.createElement('option');
+                option.value = oc;
+                datalist.appendChild(option);
+            });
+        }
         
         // Ordenamos por mes (ascendente) para mejor visualización
         dbData.sort((a, b) => a.mes.localeCompare(b.mes));
@@ -1265,17 +1279,18 @@ function renderData() {
             if (row.estadoRecibo === 'completo') receivedCount++;
             else pendingCount++;
 
-            if (row.estadoRecibo !== 'completo') {
-                const trFaltantes = document.createElement('tr');
-                trFaltantes.innerHTML = `
-                    <td style="font-weight: 500;">${row.item}</td>
-                    <td style="font-weight: 700; color: var(--status-red);">${row.cantidad} und.</td>
-                    <td style="color: var(--text-secondary); font-size: 12px;">${procura}</td>
-                    <td><span class="badge" style="background:#f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color);">${row.ordenCompra}</span></td>
-                    <td><span class="badge" style="background:#f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color);">${row.reciboCompra}</span></td>
-                `;
-                tableFaltantes.appendChild(trFaltantes);
-            }
+            const trFaltantes = document.createElement('tr');
+            const cantColor = row.estadoRecibo === 'completo' ? 'var(--status-green)' : 'var(--status-red)';
+            const stateText = row.estadoRecibo === 'completo' ? 'RECIBIDO' : (row.estadoRecibo === 'parcial' ? 'PARCIAL' : 'PENDIENTE');
+            
+            trFaltantes.innerHTML = `
+                <td style="font-weight: 500;">${row.item}</td>
+                <td style="font-weight: 700; color: ${cantColor};">${row.cantidad} und.</td>
+                <td style="color: var(--text-secondary); font-size: 12px;">${procura}</td>
+                <td><span class="badge" style="background:#f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color);">${row.ordenCompra}</span></td>
+                <td><span class="badge" style="background:${row.estadoRecibo === 'completo' ? '#dcfce7' : '#fee2e2'}; color: ${row.estadoRecibo === 'completo' ? '#166534' : '#991b1b'}; border: 1px solid var(--border-color);">${stateText}</span></td>
+            `;
+            tableFaltantes.appendChild(trFaltantes);
         }
 
         // Lógica VISTA ORDENES
