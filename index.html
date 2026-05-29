@@ -104,14 +104,34 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
 .stat-value { font-size: 32px; font-weight: 700; color: var(--text-primary); }
 
 /* Filters */
-.filters-section { background: white; border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border: 1px solid var(--border-color); }
-.filter-group { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.filters-section { background: white; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.filter-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; width: 100%; }
 .filter-label { font-weight: 700; font-size: 12px; color: var(--text-secondary); letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;}
 .filter-search { position: relative; display: flex; align-items: center; }
-.search-icon { position: absolute; left: 14px; color: var(--text-secondary); font-size: 14px; }
-.filter-input-search { padding: 10px 14px 10px 38px; border: 1px solid var(--border-color); border-radius: 8px; font-family: var(--font-sans); font-size: 13px; width: 300px; background-color: #f8fafc; }
-.filter-input-search:focus { outline: none; border-color: var(--primary-blue); background-color: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-.filter-select { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-family: var(--font-sans); font-size: 13px; cursor: pointer; background-color: #f8fafc; }
+.search-icon { position: absolute; left: 14px; color: #94a3b8; font-size: 14px; }
+.filter-input-search, .filter-select { 
+    padding: 10px 16px; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 10px; 
+    font-family: var(--font-sans); 
+    font-size: 13px; 
+    background-color: #f8fafc; 
+    color: #334155; 
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+}
+.filter-input-search { padding-left: 40px; width: 240px; }
+.filter-select { 
+    appearance: none;
+    padding-right: 36px;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%2364748b" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 18px;
+    cursor: pointer; 
+}
+.filter-input-search:focus, .filter-select:focus { outline: none; border-color: var(--primary-blue); background-color: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
 /* Buttons & Form Elements */
 .btn-primary { background: var(--primary-blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: 0.2s; }
@@ -374,6 +394,11 @@ tbody tr:hover { background-color: #f8fafc; }
                         <div class="filter-item">
                             <select class="filter-select" id="filter-ordenes-coord">
                                 <option value="todos">Coordinación (Todas)</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <select class="filter-select" id="filter-ordenes-procura">
+                                <option value="todos">Personal Procura (Todos)</option>
                             </select>
                         </div>
                         <div class="filter-item">
@@ -797,12 +822,14 @@ function startRealtimeListener() {
         dbData = [];
         const uniqueOcsForDatalist = new Set();
         const uniqueCoordsForFilter = new Set();
+        const uniqueProcurasForFilter = new Set();
         
         snapshot.forEach((doc) => {
             const data = doc.data();
             dbData.push({ id: doc.id, ...data });
             if(data.ordenCompra) uniqueOcsForDatalist.add(data.ordenCompra);
             if(data.coordinacion && data.coordinacion !== '-') uniqueCoordsForFilter.add(data.coordinacion);
+            if(data.procura && data.procura !== '-') uniqueProcurasForFilter.add(data.procura);
         });
         
         const datalist = document.getElementById('list-ordenes');
@@ -826,6 +853,19 @@ function startRealtimeListener() {
                 coordSelect.appendChild(option);
             });
             coordSelect.value = currentVal;
+        }
+
+        const procSelect = document.getElementById('filter-ordenes-procura');
+        if (procSelect) {
+            const currentVal = procSelect.value;
+            procSelect.innerHTML = '<option value="todos">Personal Procura (Todos)</option>';
+            Array.from(uniqueProcurasForFilter).sort().forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = p;
+                procSelect.appendChild(option);
+            });
+            procSelect.value = currentVal;
         }
         
         // Ordenamos por mes (ascendente) para mejor visualización
@@ -1264,6 +1304,7 @@ function renderData() {
     const fOrdPag = document.getElementById('filter-ordenes-pago')?.value || 'todos';
     const fOrdRec = document.getElementById('filter-ordenes-recibo')?.value || 'todos';
     const fOrdCoord = document.getElementById('filter-ordenes-coord')?.value || 'todos';
+    const fOrdProcura = document.getElementById('filter-ordenes-procura')?.value || 'todos';
 
     tableOrdenes.innerHTML = '';
     tableFaltantes.innerHTML = '';
@@ -1322,6 +1363,7 @@ function renderData() {
         if(fOrdRec !== 'todos' && row.estadoRecibo !== fOrdRec) passOrdenes = false;
         if(fOrdTxt && !oc.includes(fOrdTxt) && !rc.includes(fOrdTxt) && !item.includes(fOrdTxt)) passOrdenes = false;
         if(fOrdCoord !== 'todos' && (row.coordinacion || '-') !== fOrdCoord) passOrdenes = false;
+        if(fOrdProcura !== 'todos' && procura !== fOrdProcura) passOrdenes = false;
 
         if (passOrdenes) {
             ordenesList.push(row);
@@ -1351,49 +1393,83 @@ function renderData() {
         }
     });
 
+    // Pre-calcular rowspans para agrupación visual inteligente
+    for (let i = 0; i < ordenesList.length; i++) {
+        ordenesList[i].rowspanOrden = 1;
+        ordenesList[i].rowspanRecibo = 1;
+        ordenesList[i].rowspanCoord = 1;
+    }
+
+    // Calcular rowspan para ordenCompra
+    for (let i = 0; i < ordenesList.length; ) {
+        let count = 1;
+        while (i + count < ordenesList.length && ordenesList[i + count].ordenCompra === ordenesList[i].ordenCompra) {
+            ordenesList[i + count].rowspanOrden = 0;
+            count++;
+        }
+        ordenesList[i].rowspanOrden = count;
+        i += count;
+    }
+
+    // Calcular rowspan para reciboCompra (dentro de la misma orden)
+    for (let i = 0; i < ordenesList.length; ) {
+        let count = 1;
+        while (i + count < ordenesList.length && 
+               ordenesList[i + count].ordenCompra === ordenesList[i].ordenCompra &&
+               ordenesList[i + count].reciboCompra === ordenesList[i].reciboCompra) {
+            ordenesList[i + count].rowspanRecibo = 0;
+            count++;
+        }
+        ordenesList[i].rowspanRecibo = count;
+        i += count;
+    }
+
+    // Calcular rowspan para Coordinacion, Procura y Comentario (dentro de la misma orden)
+    for (let i = 0; i < ordenesList.length; ) {
+        let count = 1;
+        while (i + count < ordenesList.length && 
+               ordenesList[i + count].ordenCompra === ordenesList[i].ordenCompra &&
+               ordenesList[i + count].coordinacion === ordenesList[i].coordinacion &&
+               ordenesList[i + count].procura === ordenesList[i].procura &&
+               ordenesList[i + count].comSol === ordenesList[i].comSol) {
+            ordenesList[i + count].rowspanCoord = 0;
+            count++;
+        }
+        ordenesList[i].rowspanCoord = count;
+        i += count;
+    }
+
     // Render Ordenes Agrupadas
-    let i = 0;
-    while(i < ordenesList.length) {
-        let row = ordenesList[i];
-        let groupCount = 1;
-        while(i + groupCount < ordenesList.length && 
-              ordenesList[i + groupCount].ordenCompra === row.ordenCompra && 
-              ordenesList[i + groupCount].reciboCompra === row.reciboCompra) {
-            groupCount++;
+    for (let i = 0; i < ordenesList.length; i++) {
+        const currentRow = ordenesList[i];
+        const trOrdenes = document.createElement('tr');
+        
+        let html = '';
+        if (currentRow.rowspanOrden > 0) {
+            html += `<td rowspan="${currentRow.rowspanOrden}" style="font-weight: 600; vertical-align: middle; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">${currentRow.ordenCompra}</td>`;
+        }
+        if (currentRow.rowspanRecibo > 0) {
+            html += `<td rowspan="${currentRow.rowspanRecibo}" style="font-weight: 700; color: var(--primary-blue); vertical-align: middle; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">${currentRow.reciboCompra}</td>`;
+        }
+        if (currentRow.rowspanCoord > 0) {
+            html += `<td rowspan="${currentRow.rowspanCoord}" style="vertical-align: middle; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">${currentRow.coordinacion || '-'}</td>`;
+            html += `<td rowspan="${currentRow.rowspanCoord}" style="font-weight: 600; font-size: 11px; vertical-align: middle; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">${currentRow.procura || ''}</td>`;
+            html += `<td rowspan="${currentRow.rowspanCoord}" class="truncate" title="${currentRow.comSol}" style="font-size: 12px; color: var(--text-secondary); vertical-align: middle; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">${currentRow.comSol || '-'}</td>`;
         }
         
-        for(let j = 0; j < groupCount; j++) {
-            let currentRow = ordenesList[i + j];
-            let procura = currentRow.procura || '';
-            const trOrdenes = document.createElement('tr');
-            
-            let rowspanHtml = '';
-            if (j === 0) {
-                rowspanHtml = `
-                <td rowspan="${groupCount}" style="font-weight: 600; vertical-align: middle; border-bottom: 1px solid var(--border-color);">${currentRow.ordenCompra}</td>
-                <td rowspan="${groupCount}" style="font-weight: 700; color: var(--primary-blue); vertical-align: middle; border-bottom: 1px solid var(--border-color);">${currentRow.reciboCompra}</td>
-                `;
-            }
-            
-            trOrdenes.innerHTML = `
-                ${rowspanHtml}
-                <td>${currentRow.coordinacion || '-'}</td>
-                <td style="font-weight: 600; font-size: 11px;">${procura}</td>
-                <td class="truncate" title="${currentRow.comSol}" style="font-size: 12px; color: var(--text-secondary);">${currentRow.comSol || '-'}</td>
-                <td class="truncate" style="font-weight: 500;" title="${currentRow.item}">${currentRow.item}</td>
-                <td style="font-weight: 700; text-align: center;">${currentRow.cantidad}</td>
-                <td>${getBadgeHtml(currentRow.estadoPago, 'pago', currentRow.id)}</td>
-                <td>${getBadgeHtml(currentRow.estadoRecibo, 'recibo', currentRow.id)}</td>
-                <td class="truncate" title="${currentRow.comRec}" style="font-size: 12px; color: var(--text-secondary);">${currentRow.comRec || '-'}</td>
-                <td style="white-space: nowrap;">
-                    <button class="btn-icon btn-edit" onclick="window.openEditModal('${currentRow.id}')" title="Editar Comentario"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon btn-delete" onclick="window.openDeleteModal('${currentRow.id}', '${currentRow.ordenCompra}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-            tableOrdenes.appendChild(trOrdenes);
-        }
-        
-        i += groupCount;
+        html += `
+            <td class="truncate" style="font-weight: 500;" title="${currentRow.item}">${currentRow.item}</td>
+            <td style="font-weight: 700; text-align: center;">${currentRow.cantidad}</td>
+            <td>${getBadgeHtml(currentRow.estadoPago, 'pago', currentRow.id)}</td>
+            <td>${getBadgeHtml(currentRow.estadoRecibo, 'recibo', currentRow.id)}</td>
+            <td class="truncate" title="${currentRow.comRec}" style="font-size: 12px; color: var(--text-secondary);">${currentRow.comRec || '-'}</td>
+            <td style="white-space: nowrap;">
+                <button class="btn-icon btn-edit" onclick="window.openEditModal('${currentRow.id}')" title="Editar Comentario"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-icon btn-delete" onclick="window.openDeleteModal('${currentRow.id}', '${currentRow.ordenCompra}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        trOrdenes.innerHTML = html;
+        tableOrdenes.appendChild(trOrdenes);
     }
 
     if (tableRetirosHistorial) {
