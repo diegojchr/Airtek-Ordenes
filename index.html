@@ -372,6 +372,11 @@ tbody tr:hover { background-color: #f8fafc; }
                             <input type="month" class="filter-select" id="filter-ordenes-mes" title="Mes">
                         </div>
                         <div class="filter-item">
+                            <select class="filter-select" id="filter-ordenes-coord">
+                                <option value="todos">Coordinación (Todas)</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
                             <select class="filter-select" id="filter-ordenes-pago">
                                 <option value="todos">Est. Pago (Todos)</option>
                                 <option value="pagado">Pagado</option>
@@ -791,11 +796,13 @@ function startRealtimeListener() {
     unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
         dbData = [];
         const uniqueOcsForDatalist = new Set();
+        const uniqueCoordsForFilter = new Set();
         
         snapshot.forEach((doc) => {
             const data = doc.data();
             dbData.push({ id: doc.id, ...data });
             if(data.ordenCompra) uniqueOcsForDatalist.add(data.ordenCompra);
+            if(data.coordinacion && data.coordinacion !== '-') uniqueCoordsForFilter.add(data.coordinacion);
         });
         
         const datalist = document.getElementById('list-ordenes');
@@ -806,6 +813,19 @@ function startRealtimeListener() {
                 option.value = oc;
                 datalist.appendChild(option);
             });
+        }
+
+        const coordSelect = document.getElementById('filter-ordenes-coord');
+        if (coordSelect) {
+            const currentVal = coordSelect.value;
+            coordSelect.innerHTML = '<option value="todos">Coordinación (Todas)</option>';
+            Array.from(uniqueCoordsForFilter).sort().forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.textContent = c;
+                coordSelect.appendChild(option);
+            });
+            coordSelect.value = currentVal;
         }
         
         // Ordenamos por mes (ascendente) para mejor visualización
@@ -1107,8 +1127,8 @@ function initModals() {
                     procura: parts[5] || 'ADMIN',
                     item: parts[6] || '-',
                     cantidad: parseInt(parts[7]) || 0,
-                    estadoPago: (parts[8] || 'nopagado').toLowerCase(),
-                    estadoRecibo: (parts[9] || 'norecibido').toLowerCase(),
+                    estadoPago: (parts[8] || 'nopagado').toLowerCase().replace(/\s+/g, ''),
+                    estadoRecibo: (parts[9] || 'norecibido').toLowerCase().replace(/\s+/g, ''),
                     comRec: parts[10] || '-',
                     timestamp: new Date()
                 });
@@ -1243,6 +1263,7 @@ function renderData() {
     const fOrdMes = document.getElementById('filter-ordenes-mes')?.value || '';
     const fOrdPag = document.getElementById('filter-ordenes-pago')?.value || 'todos';
     const fOrdRec = document.getElementById('filter-ordenes-recibo')?.value || 'todos';
+    const fOrdCoord = document.getElementById('filter-ordenes-coord')?.value || 'todos';
 
     tableOrdenes.innerHTML = '';
     tableFaltantes.innerHTML = '';
@@ -1252,6 +1273,7 @@ function renderData() {
     
     const historialRetiros = [];
     const uniqueOrdersSet = new Set();
+    const ordenesList = [];
     
     let receivedCount = 0; let pendingCount = 0;
     let totalCount = 0;
@@ -1299,26 +1321,10 @@ function renderData() {
         if(fOrdPag !== 'todos' && row.estadoPago !== fOrdPag) passOrdenes = false;
         if(fOrdRec !== 'todos' && row.estadoRecibo !== fOrdRec) passOrdenes = false;
         if(fOrdTxt && !oc.includes(fOrdTxt) && !rc.includes(fOrdTxt) && !item.includes(fOrdTxt)) passOrdenes = false;
+        if(fOrdCoord !== 'todos' && (row.coordinacion || '-') !== fOrdCoord) passOrdenes = false;
 
         if (passOrdenes) {
-            const trOrdenes = document.createElement('tr');
-            trOrdenes.innerHTML = `
-                <td style="font-weight: 600;">${row.ordenCompra}</td>
-                <td style="font-weight: 700; color: var(--primary-blue);">${row.reciboCompra}</td>
-                <td>${row.coordinacion || '-'}</td>
-                <td style="font-weight: 600; font-size: 11px;">${procura}</td>
-                <td class="truncate" title="${row.comSol}" style="font-size: 12px; color: var(--text-secondary);">${row.comSol || '-'}</td>
-                <td class="truncate" style="font-weight: 500;" title="${row.item}">${row.item}</td>
-                <td style="font-weight: 700; text-align: center;">${row.cantidad}</td>
-                <td>${getBadgeHtml(row.estadoPago, 'pago', row.id)}</td>
-                <td>${getBadgeHtml(row.estadoRecibo, 'recibo', row.id)}</td>
-                <td class="truncate" title="${row.comRec}" style="font-size: 12px; color: var(--text-secondary);">${row.comRec || '-'}</td>
-                <td style="white-space: nowrap;">
-                    <button class="btn-icon btn-edit" onclick="window.openEditModal('${row.id}')" title="Editar Comentario"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon btn-delete" onclick="window.openDeleteModal('${row.id}', '${row.ordenCompra}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-            tableOrdenes.appendChild(trOrdenes);
+            ordenesList.push(row);
         }
         // Lógica VISTA RETIROS
         if (tableRetirosPendientes) {
@@ -1344,6 +1350,51 @@ function renderData() {
             }
         }
     });
+
+    // Render Ordenes Agrupadas
+    let i = 0;
+    while(i < ordenesList.length) {
+        let row = ordenesList[i];
+        let groupCount = 1;
+        while(i + groupCount < ordenesList.length && 
+              ordenesList[i + groupCount].ordenCompra === row.ordenCompra && 
+              ordenesList[i + groupCount].reciboCompra === row.reciboCompra) {
+            groupCount++;
+        }
+        
+        for(let j = 0; j < groupCount; j++) {
+            let currentRow = ordenesList[i + j];
+            let procura = currentRow.procura || '';
+            const trOrdenes = document.createElement('tr');
+            
+            let rowspanHtml = '';
+            if (j === 0) {
+                rowspanHtml = `
+                <td rowspan="${groupCount}" style="font-weight: 600; vertical-align: middle; border-bottom: 1px solid var(--border-color);">${currentRow.ordenCompra}</td>
+                <td rowspan="${groupCount}" style="font-weight: 700; color: var(--primary-blue); vertical-align: middle; border-bottom: 1px solid var(--border-color);">${currentRow.reciboCompra}</td>
+                `;
+            }
+            
+            trOrdenes.innerHTML = `
+                ${rowspanHtml}
+                <td>${currentRow.coordinacion || '-'}</td>
+                <td style="font-weight: 600; font-size: 11px;">${procura}</td>
+                <td class="truncate" title="${currentRow.comSol}" style="font-size: 12px; color: var(--text-secondary);">${currentRow.comSol || '-'}</td>
+                <td class="truncate" style="font-weight: 500;" title="${currentRow.item}">${currentRow.item}</td>
+                <td style="font-weight: 700; text-align: center;">${currentRow.cantidad}</td>
+                <td>${getBadgeHtml(currentRow.estadoPago, 'pago', currentRow.id)}</td>
+                <td>${getBadgeHtml(currentRow.estadoRecibo, 'recibo', currentRow.id)}</td>
+                <td class="truncate" title="${currentRow.comRec}" style="font-size: 12px; color: var(--text-secondary);">${currentRow.comRec || '-'}</td>
+                <td style="white-space: nowrap;">
+                    <button class="btn-icon btn-edit" onclick="window.openEditModal('${currentRow.id}')" title="Editar Comentario"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon btn-delete" onclick="window.openDeleteModal('${currentRow.id}', '${currentRow.ordenCompra}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tableOrdenes.appendChild(trOrdenes);
+        }
+        
+        i += groupCount;
+    }
 
     if (tableRetirosHistorial) {
         tableRetirosHistorial.innerHTML = '';
